@@ -3,15 +3,16 @@ package com.len.spring.rest.api.spring_rest_api.service;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.len.spring.rest.api.spring_rest_api.dto.ContactResponse;
 import com.len.spring.rest.api.spring_rest_api.dto.CreateContactRequest;
 import com.len.spring.rest.api.spring_rest_api.entity.Contact;
 import com.len.spring.rest.api.spring_rest_api.entity.User;
 import com.len.spring.rest.api.spring_rest_api.repository.ContactRepository;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class ContactService {
@@ -21,6 +22,16 @@ public class ContactService {
 
     @Autowired
     private ValidationService validationService;
+
+    private ContactResponse toContactResponse(Contact contact) {
+        return ContactResponse.builder()
+            .id(contact.getId())
+            .firstname(contact.getFirstName())
+            .lastname(contact.getLastName())
+            .email(contact.getEmail())
+            .phone(contact.getPhone())
+            .build();
+    }
 
     @Transactional
     public ContactResponse create(User user ,CreateContactRequest request) {
@@ -36,16 +47,15 @@ public class ContactService {
 
         contactRepository.save(contact);
 
-        return ContactResponse.builder()
-            .id(contact.getId())
-            .firstname(contact.getFirstName())
-            .lastname(contact.getLastName())
-            .email(contact.getEmail())
-            .phone(contact.getPhone())
-            .build();
+        return toContactResponse(contact);
     }
-
-
     
+    @Transactional(readOnly = true)
+    public ContactResponse get(User user, String id) {
+        Contact contact = contactRepository.findFirstByUserAndId(user, id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+
+        return toContactResponse(contact);
+    }
 
 }
