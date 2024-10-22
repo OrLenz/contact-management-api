@@ -3,6 +3,7 @@ package com.len.spring.rest.api.spring_rest_api.service;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.len.spring.rest.api.spring_rest_api.dto.ContactResponse;
 import com.len.spring.rest.api.spring_rest_api.dto.CreateContactRequest;
+import com.len.spring.rest.api.spring_rest_api.dto.SearchContactRequest;
+import com.len.spring.rest.api.spring_rest_api.dto.UpdateContactRequest;
 import com.len.spring.rest.api.spring_rest_api.entity.Contact;
 import com.len.spring.rest.api.spring_rest_api.entity.User;
 import com.len.spring.rest.api.spring_rest_api.repository.ContactRepository;
@@ -57,5 +60,32 @@ public class ContactService {
 
         return toContactResponse(contact);
     }
+
+    @Transactional
+    public ContactResponse update(User user, UpdateContactRequest request) {
+        validationService.validate(request);
+
+        Contact contact = contactRepository.findFirstByUserAndId(user, request.getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+
+        contact.setFirstName(request.getFirstname());
+        contact.setLastName(request.getLastname());
+        contact.setEmail(request.getEmail());
+        contact.setPhone(request.getPhone());
+        contactRepository.save(contact);
+
+        return toContactResponse(contact);
+    }
+
+    public void delete(User user, String contactId) {
+        Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+
+        contactRepository.delete(contact);
+    }
+
+    // public Page<ContactResponse> search(User user, SearchContactRequest request) {
+
+    // }
 
 }
