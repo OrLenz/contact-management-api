@@ -1,6 +1,6 @@
 package com.len.spring.rest.api.spring_rest_api.repository;
 
-import java.util.Optional;
+import java.util.*;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,5 +12,7 @@ import com.len.spring.rest.api.spring_rest_api.entity.Contact;
 public interface AddressRepository extends JpaRepository<Address, String> {
 
     Optional<Address> findFirstByContactAndId(Contact contact, String id);
+
+    List<Address> findAllByContact(Contact contact);
 
 }
